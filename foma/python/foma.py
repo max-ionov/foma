@@ -121,6 +121,10 @@ fsm_trie_add_word = foma.fsm_trie_add_word
 fsm_trie_done = foma.fsm_trie_done
 fsm_trie_done.restype = POINTER(FSTstruct)
 
+"""Lexicon functions"""
+fsm_lexc_parse_string = foma.fsm_lexc_parse_string
+fsm_lexc_parse_string.restype = POINTER(FSTstruct)
+
 
 class FSTnetworkdefinitions(object):
     def __init__(self):
@@ -186,6 +190,15 @@ class FST(object):
             raise ValueError("File error.")
         return fsm
 
+    @classmethod
+    def lexicon(cls, lexicon):
+        """Load `lexc` lexicon from string"""
+        fsm = cls()
+        fsm.fsthandle = fsm_lexc_parse_string(c_char_p(FST.encode(lexicon)))
+        if not fsm.fsthandle:
+            raise ValueError("Error loading lexicon")
+        return fsm
+
     @staticmethod
     def encode(string):
         # type: (Any) -> six.binary_type
@@ -226,7 +239,7 @@ class FST(object):
         result = []
         output = foma_apply_down(c_void_p(self.getitemapplyer), c_char_p(self.encode(key)))
         while True:
-            if output == None:
+            if output is None:
                 return result
             else:
                 result.append(output)
